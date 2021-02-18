@@ -52,7 +52,7 @@ ax4.set_title('Type-4')
 #creating results for every tree type
 # The > 0.6 in this case is the tolerance 
 
-# Adjust hte threshold to eliminaet error and noise 
+# Adjust the threshold to eliminate error and noise 
 
 
 #small
