@@ -9,12 +9,12 @@ import matplotlib.pyplot as plt
 ### Load all project images
 ###################################
 
-ImagenTotal = np.asarray(Image.open('./Tozeur/Chabbat.png'))
+ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
 #multiplesizes: small, medium, large or extra
-ImagenTemplateSmall = np.asarray(Image.open('./Tozeur/Template1.png'))
-ImagenTemplateMedium = np.asarray(Image.open('./Tozeur/Template2.png'))
-ImagenTemplateLarge = np.asarray(Image.open('./Tozeur/Template3.png'))
-ImagenTemplateExtra = np.asarray(Image.open('./Tozeur/Template4.png'))
+ImagenTemplateSmall = np.asarray(Image.open('../Tutorial/Tozeur/Template1.png'))
+ImagenTemplateMedium = np.asarray(Image.open('../Tutorial/Tozeur/Template2.png'))
+ImagenTemplateLarge = np.asarray(Image.open('../Tutorial/Tozeur/Template3.png'))
+ImagenTemplateExtra = np.asarray(Image.open('../Tutorial/Tozeur/Template4.png'))
 
 ###################################
 ### Display project images
@@ -97,3 +97,15 @@ plt.plot(listapuntos(resultextraquery)[0], listapuntos(resultextraquery)[1], 'o'
 plt.imshow(ImagenTotal[10:-10,10:-10,:])
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
 plt.show()
+
+result_types = [resultsmallquery, resultmediumquery, resultlargequery, resultextraquery]
+key_nms = ["small", "medium", "large", "extra"]
+count_dct = {}
+for i in range(len(result_types)):
+    x,y = listapuntos(result_types[i])
+    count_dct[key_nms[i]] = len(x)
+total = 0
+for i in count_dct.keys():
+    total += count_dct[i]
+count_dct["total"] = total
+print(count_dct)
