@@ -1,26 +1,17 @@
 '''
 @mawaskow
 Description:
-This program allows a user to select a polygon from an image 
-to be saved as its own image.
-The completed program will be able to be used in conjunction
-with other code in order to create template files for machine
-learning feature identification algorithms.
+This program recognizes crop row lines to clean the data of an image being used in
+a machine learning algorithm.
+
+References:
+https://scikit-image.org/docs/dev/auto_examples/edges/plot_line_hough_transform.html
 '''
 
-'''
 # import statements
-from PIL import Image
-# PIL library named pillow
 import numpy as np
-# from scikit library
-from skimage import data
-from skimage.feature import match_template
-import matplotlib.pyplot as plt
-'''
 
-# Hough transform to detect lines in picture
-import numpy as np
+from PIL import Image
 
 from skimage.transform import hough_line, hough_line_peaks
 from skimage.feature import canny
@@ -31,16 +22,20 @@ import matplotlib.pyplot as plt
 from matplotlib import cm
 
 # Constructing test image
-image = np.zeros((200, 200))
-idx = np.arange(25, 175)
-image[idx, idx] = 255
-image[line(45, 25, 25, 175)] = 255
-image[line(25, 135, 175, 155)] = 255
+
+print("Loading image into array...")
+
+ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
+image = ImagenTotal[:,:,0]
+
+print("Conducting basic Hough Transform...")
 
 # Classic straight-line Hough transform
 # Set a precision of 0.5 degree.
 tested_angles = np.linspace(-np.pi / 2, np.pi / 2, 360, endpoint=False)
 h, theta, d = hough_line(image, theta=tested_angles)
+
+print("Building basic Hough Transform output image...")
 
 # Generating figure 1
 fig, axes = plt.subplots(1, 3, figsize=(15, 6))
@@ -71,17 +66,22 @@ for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
     ax[2].axline((x0, y0), slope=np.tan(angle + np.pi/2))
 
 plt.tight_layout()
-plt.show()
+#plt.show()
 
 #################################################################################
 
 from skimage.transform import probabilistic_hough_line
 
+print("Conducting Probabilistic Hough Transform...")
+
 # Line finding using the Probabilistic Hough Transform
-image = data.camera()
+ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
+image = ImagenTotal[:,:,0]
 edges = canny(image, 2, 1, 25)
 lines = probabilistic_hough_line(edges, threshold=10, line_length=5,
                                  line_gap=3)
+
+print("Building Probabilistic Hough Transform output image...")
 
 # Generating figure 2
 fig, axes = plt.subplots(1, 3, figsize=(15, 5), sharex=True, sharey=True)
@@ -106,3 +106,5 @@ for a in ax:
 
 plt.tight_layout()
 plt.show()
+
+print("Program ended.")
