@@ -1,6 +1,7 @@
 from PIL import Image
 # PIL library named pillow
 import numpy as np
+# from scikit library
 from skimage import data
 from skimage.feature import match_template
 import matplotlib.pyplot as plt
