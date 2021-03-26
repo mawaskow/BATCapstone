@@ -51,6 +51,8 @@ ax3.set_title('Type-3')
 ax4.imshow(ExLrgTrees, cmap=plt.cm.RdYlGn)  #Apply whatver color you wish 
 ax4.set_title('Type-4')
 
+plt.savefig('./Outputs/didan_alg_templatedisp.png', dpi=300, bbox_inches='tight')
+
 ###################################
 ### Apply the shape/pattern matching using a threshold of
 ###################################
@@ -103,6 +105,7 @@ plt.plot(listapuntos(resultextraquery)[0], listapuntos(resultextraquery)[1], 'o'
          markeredgecolor='y', markerfacecolor='none', markersize=5, label="Palm Tree - Type 4")
 plt.imshow(ImagenTotal[10:-10,10:-10,:])
 plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))
+plt.savefig('./Outputs/didan_alg_tree_class.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 print("Building classification library...")
