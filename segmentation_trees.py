@@ -1,11 +1,15 @@
+# import statements
+import numpy as np
+
 import matplotlib.pyplot as plt
 import matplotlib.image as mpimg
-import numpy as np
-from skimage import data
+
 from PIL import Image
+
+from scipy import ndimage as ndi
+from skimage import data
 from skimage.exposure import histogram
 from skimage.feature import canny
-from scipy import ndimage as ndi
 from skimage.filters import sobel
 from skimage.segmentation import watershed
 
