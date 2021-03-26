@@ -31,9 +31,10 @@ image = ImagenTotal[:,:,0]
 print("Conducting basic Hough Transform...")
 
 # Classic straight-line Hough transform
-# Set a precision of 0.5 degree.
-tested_angles = np.linspace(-np.pi / 2, np.pi / 2, 360, endpoint=False)
-h, theta, d = hough_line(image, theta=tested_angles)
+# Set a precision of 0.5 degree with tested_angles = np.linspace(-np.pi / 2, np.pi / 2, 360, endpoint=False)
+precis = 0.25
+tested_angles = np.linspace(-np.pi*precis, np.pi*precis, 360, endpoint=False)
+h, theta, d = hough_line(image)  # additional hough_line() argument: theta=tested_angles
 
 print("Building basic Hough Transform output image...")
 
@@ -66,6 +67,7 @@ for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
     ax[2].axline((x0, y0), slope=np.tan(angle + np.pi/2))
 
 plt.tight_layout()
+plt.savefig('./Outputs/basic_hough_precis'+str(precis)+'.png', dpi=300, bbox_inches='tight')
 #plt.show()
 
 #################################################################################
@@ -78,8 +80,16 @@ print("Conducting Probabilistic Hough Transform...")
 ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
 image = ImagenTotal[:,:,0]
 edges = canny(image, 2, 1, 25)
-lines = probabilistic_hough_line(edges, threshold=10, line_length=5,
-                                 line_gap=3)
+# probabilistic_hough_line(image, threshold=10, line_length=50, line_gap=10, theta=None, seed=None)
+# line_length: min accepted length of detected lines
+# line_gap: max gap btwn px to still form line. Increase to merge broken lines more aggressively
+# returns list containing lines identified as point start and end ((x0, y0), (x1, y1))
+
+thres = 10
+linlen = 100
+lingap = 5
+
+lines = probabilistic_hough_line(edges, threshold=thres, line_length=linlen, line_gap=lingap)
 
 print("Building Probabilistic Hough Transform output image...")
 
@@ -105,6 +115,7 @@ for a in ax:
     a.set_axis_off()
 
 plt.tight_layout()
+plt.savefig('./Outputs/prob_hough_thres'+str(thres)+'_len'+str(linlen)+'_gap'+str(lingap)+'.png', dpi=300, bbox_inches='tight')
 plt.show()
 
 print("Program ended.")
