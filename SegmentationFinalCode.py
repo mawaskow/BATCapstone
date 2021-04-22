@@ -7,7 +7,6 @@ Created on Tue Apr 20 15:51:14 2021
 
 import matplotlib.pyplot as plt
 import numpy as np
-from skimage import data
 from PIL import Image
 from skimage.exposure import histogram
 from skimage.feature import canny
@@ -34,8 +33,20 @@ plt.show()
 
 print("After looking at the histogram detemine the upper and the lower setting for the markers.")
 print("Press enter when finished")
-lower = int(input("Lower bound:"))
-upper = int(input("Upper bound:"))
+lower = int(input("Lower Bound:"))
+upper = int(input("Upper Bound:"))
+
+if upper > 250 or upper < 0:
+    print("Unusable input for Upper Bound would you like to retry?")
+    response = input("Input Y for yes and N for no.")
+    if response == "Y":
+        upper = int(input("Upper Bound:"))
+        
+if lower >250 or lower < 0:
+    print("Unusable input for Lower Bound would you like to retry?")
+    response = input("Input Y for yes and N for no.")
+    if response == "Y":
+        lower = int(input("Lower Bound:"))                      
 
 
 edge = canny(tree/600)
