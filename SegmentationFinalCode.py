@@ -36,17 +36,19 @@ print("Press enter when finished")
 lower = int(input("Lower Bound:"))
 upper = int(input("Upper Bound:"))
 
-if upper > 250 or upper < 0:
-    print("Unusable input for Upper Bound would you like to retry?")
-    response = input("Input Y for yes and N for no.")
-    if response == "Y":
-        upper = int(input("Upper Bound:"))
-        
 if lower >250 or lower < 0:
     print("Unusable input for Lower Bound would you like to retry?")
-    response = input("Input Y for yes and N for no.")
+    response = input("Input Y for yes and N for no:")
     if response == "Y":
-        lower = int(input("Lower Bound:"))                      
+        lower = int(input("Lower Bound:")) 
+    
+print("")       
+ 
+if upper > 250 or upper < 0:
+    print("Unusable input for Upper Bound would you like to retry?")
+    response = input("Input Y for yes and N for no:")
+    if response == "Y":
+        upper = int(input("Upper Bound:"))                      
 
 
 edge = canny(tree/600)
