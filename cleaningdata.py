@@ -11,7 +11,7 @@ https://scikit-image.org/docs/dev/auto_examples/edges/plot_line_hough_transform.
 # import statements
 import numpy as np
 
-from PIL import Image
+from PIL import Image, ImageEnhance
 
 from skimage.transform import hough_line, hough_line_peaks
 from skimage.feature import canny
@@ -23,9 +23,23 @@ from matplotlib import cm
 
 # Constructing test image
 
+print("Enhancing image with contrast transform...")
+
+img = Image.open('../Tutorial/Tozeur/Chabbat.png')
+plt.figure()
+plt.imshow(img)
+
+enhancer = ImageEnhance.Contrast(img)
+clvl = 4
+factor = 259*(clvl+255)/(255*(259-clvl))
+img_cont = enhancer.enhance(factor)
+
+plt.figure()
+plt.imshow(img_cont)
+
 print("Loading image into array...")
 
-ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
+ImagenTotal = np.asarray(img)
 image = ImagenTotal[:,:,0]
 
 print("Conducting basic Hough Transform...")
@@ -64,7 +78,9 @@ ax[2].set_title('Detected lines')
 
 for _, angle, dist in zip(*hough_line_peaks(h, theta, d)):
     (x0, y0) = dist * np.array([np.cos(angle), np.sin(angle)])
-    ax[2].axline((x0, y0), slope=np.tan(angle + np.pi/2))
+    x = np.linspace(x0, x0+100, 101)
+    m=np.tan(angle + np.pi/2)
+    ax[2].plot(x, m*x+y0)
 
 plt.tight_layout()
 plt.savefig('./Outputs/basic_hough_precis'+str(precis)+'.png', dpi=300, bbox_inches='tight')

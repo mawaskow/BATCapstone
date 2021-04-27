@@ -25,11 +25,6 @@ import tkinter
 from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfilename
 
-'''
-import mpld3
-from mpld3 import plugins
-'''
-
 # How to create a template from clicking on a picture
 
 '''
@@ -45,16 +40,15 @@ Save image
 #infile= open(askopenfilename(), "r")
 #outfile= open(asksaveasfilename(), "w")
 
-'''
+ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
+trees = ImagenTotal[:,:,0]
+
 fig, ax = plt.subplots(figsize=(10,5))
-im = ax.imshow(RGBImage,extent=(0, 3100, 656,0),origin='upper', zorder=1, interpolation='none')
+im = ax.imshow(ImagenTotal,extent=(0, 3100, 656,0),origin='upper', zorder=1, interpolation='none')
 plugins.connect(fig, plugins.MousePosition(fontsize=14))
 mpld3.enable_notebook()
 mpld3.display()
-'''
 
-ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
-trees = ImagenTotal[:,:,0]
 
 plt.figure()
 plt.imshow(trees)
@@ -75,9 +69,7 @@ def line_select_callback(eclick, erelease):
     ax.add_patch(rect)
 
 
-rs = RectangleSelector(ax, line_select_callback,
-                       drawtype='box', useblit=False, button=[1], 
-                       minspanx=5, minspany=5, spancoords='pixels', 
-                       interactive=True)
+rs = RectangleSelector(ax, line_select_callback,drawtype='box', useblit=False, button=[1], 
+    minspanx=5, minspany=5, spancoords='pixels', interactive=True)
 
 plt.show()
