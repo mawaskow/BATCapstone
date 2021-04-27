@@ -20,60 +20,62 @@ print("Press enter when finished.")
 filename = input("File name:")
 print("")
 
-Image = np.asarray(Image.open(filename))
-tree = Image[:, :, 0]
+def segmentation (filename):
+    Image_1 = np.asarray(Image.open(filename))
+    tree = Image_1[:, :, 0]
 
-for i in range(0, 3):
-    hist, hist_centers = histogram(Image[:,:,i])
-    plt.plot(hist_centers, hist)
-plt.xlabel('Value')
-plt.ylabel('Frequency')
-plt.title('Histogram of Image Values')
-plt.show()
+    for i in range(0, 3):
+        hist, hist_centers = histogram(Image_1[:,:,i])
+        plt.plot(hist_centers, hist)
+        plt.xlabel('Value')
+        plt.ylabel('Frequency')
+        plt.title('Histogram of Image Values')
+        plt.show()
 
-print("After looking at the histogram detemine the upper and the lower setting for the markers.")
-print("Press enter when finished")
-lower = int(input("Lower Bound:"))
-upper = int(input("Upper Bound:"))
+    print("After looking at the histogram detemine the upper and the lower setting for the markers.")
+    print("Press enter when finished")
+    lower = int(input("Lower Bound:"))
+    upper = int(input("Upper Bound:"))
 
-if lower >250 or lower < 0:
-    print("Unusable input for Lower Bound would you like to retry?")
-    response = input("Input Y for yes and N for no:")
-    if response == "Y":
-        lower = int(input("Lower Bound:")) 
+    if lower >250 or lower < 0:
+        print("Unusable input for Lower Bound would you like to retry?")
+        response = input("Input Y for yes and N for no:")
+        if response == "Y":
+            lower = int(input("Lower Bound:")) 
     
-print("")       
+    print("")       
  
-if upper > 250 or upper < 0:
-    print("Unusable input for Upper Bound would you like to retry?")
-    response = input("Input Y for yes and N for no:")
-    if response == "Y":
-        upper = int(input("Upper Bound:"))                      
+    if upper > 250 or upper < 0:
+        print("Unusable input for Upper Bound would you like to retry?")
+        response = input("Input Y for yes and N for no:")
+        if response == "Y":
+            upper = int(input("Upper Bound:"))                      
 
 
-edge = canny(tree/600)
-fill_tree = ndi.binary_fill_holes(edge)
-plt.imshow(fill_tree)
+    edge = canny(tree/600)
+    fill_tree = ndi.binary_fill_holes(edge)
+    plt.imshow(fill_tree)
 
-label_objects, nb_labels = ndi.label(fill_tree)
-sizes = np.bincount(label_objects.ravel())
-mask_sizes = sizes > 5
-mask_sizes[0] = 0
-trees_cleaned = mask_sizes[label_objects] 
-plt.imshow(trees_cleaned)
+    label_objects, nb_labels = ndi.label(fill_tree)
+    sizes = np.bincount(label_objects.ravel())
+    mask_sizes = sizes > 5
+    mask_sizes[0] = 0
+    trees_cleaned = mask_sizes[label_objects] 
+    plt.imshow(trees_cleaned)
 
-elevation_map = sobel(Image)
-plt.imshow(elevation_map)
-markers = np.zeros_like(Image)
-markers[Image < lower] = 1
-markers[Image > upper] = 2
+    elevation_map = sobel(Image_1)
+    plt.imshow(elevation_map)
+    markers = np.zeros_like(Image_1)
+    markers[Image_1 < lower] = 1
+    markers[Image_1 > upper] = 2
 
 #Chabbat: upper = 180, lower = 110
 #PalmTreesOasis1: upper = 80, lower = 100
 #Shakmo: upper = 100, lower = 75
 
-segmentation = watershed(elevation_map, markers)
-segmentation = ndi.binary_fill_holes(segmentation - 1)
-labeled_trees, _ = ndi.label(segmentation)
-plt.imshow(segmentation[:,:,0])
+    segmentation = watershed(elevation_map, markers)
+    segmentation = ndi.binary_fill_holes(segmentation - 1)
+    labeled_trees, _ = ndi.label(segmentation)
+    plt.imshow(segmentation[:,:,0])
 
+segmentation(filename)
