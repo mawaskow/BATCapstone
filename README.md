@@ -24,7 +24,7 @@ This script [auth: Waskow] is responsible for selecting user-defined templates.
 This script [auth: Waskow] is responsible for scaling the templates, either provided or generated in the selectingtemplates.py script.
 
 #### categorization.py
-This script [auth: ] is responsible for ...
+This script [auth: Mpoyi] is responsible for matching the trees in the original region to different trees categories which come from the selected templates and then counting the number of trees matched in each category. 
 
 #### Compare_Results.py
 This script [auth: ] is responsible for ...
