@@ -8,6 +8,9 @@ References:
 https://www.pyimagesearch.com/2015/01/26/multi-scale-template-matching-using-python-opencv/
 https://docs.opencv.org/master/d4/dc6/tutorial_py_template_matching.html
 '''
+import tkinter
+from tkinter.filedialog import askopenfilename
+from tkinter.filedialog import asksaveasfilename
 
 import numpy as np
 import argparse
@@ -16,31 +19,33 @@ import glob
 import cv2
 
 # construct the argument parser and parse the arguments
-print("Parsing arguments...")
-ap = argparse.ArgumentParser()
-ap.add_argument("-t", "--template", required=True, help='../Tutorial/Tozeur/Template1.png')
-ap.add_argument("-i", "--images", required=True, help='../Tutorial/Tozeur/Chabbat.png')
-ap.add_argument("-v", "--visualize", help="Flag indicating whether or not to visualize each iteration")
-args = vars(ap.parse_args())
+#print("Parsing arguments...")
+#ap = argparse.ArgumentParser()
+#ap.add_argument("-t", "--template", required=True, help='../Tutorial/Tozeur/Template1.png')
+#ap.add_argument("-i", "--images", required=True, help='../Tutorial/Tozeur/Chabbat.png')
+#args = vars(ap.parse_args())
+
+def get_img_cv2(show = False):
+    '''
+    Prompts user to select the file they want to open.
+    Returns the image to be analyzed.
+    '''
+    infile= askopenfilename()
+    img = cv2.imread(infile)
+    im_tot = np.asarray(img)
+    if show:
+        plt.figure()
+        plt.imshow(im_tot[:,:,0])
+        plt.title("Image to be Analyzed")
+        plt.show()
+    return img
 
 # load the image image, convert it to grayscale, and detect edges
-print("Loading image...")
-template = cv2.imread(args["template"])
-
-print("Converting image to grayscale...")
-template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
-
-print("Detecting edges...")
-template = cv2.Canny(template, 50, 200)
-(tH, tW) = template.shape[:2]
-cv2.imshow("Template", template)
-
-print("Searching for template matches...")
 # loop over the images to find the template in
-for imagePath in glob.glob(args["images"] + "/*.jpg"):
-	# load the image, convert it to grayscale, and initialize the
-	# bookkeeping variable to keep track of the matched region
-	image = cv2.imread(imagePath)
+
+def scale_match(image, template, vis = False):
+	template = cv2.Canny(template, 50, 200)
+	(tH, tW) = template.shape[:2]
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	found = None
 	# loop over the scales of the image
@@ -53,34 +58,41 @@ for imagePath in glob.glob(args["images"] + "/*.jpg"):
 		# from the loop
 		if resized.shape[0] < tH or resized.shape[1] < tW:
 			break
-        # detect edges in the resized, grayscale image and apply template
+		# detect edges in the resized, grayscale image and apply template
 		# matching to find the template in the image
 		edged = cv2.Canny(resized, 50, 200)
 		result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
 		(_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
 		# check to see if the iteration should be visualized
-		if args.get("visualize", False):
+		if not vis:
 			# draw a bounding box around the detected region
 			clone = np.dstack([edged, edged, edged])
 			cv2.rectangle(clone, (maxLoc[0], maxLoc[1]),
 				(maxLoc[0] + tW, maxLoc[1] + tH), (0, 0, 255), 2)
 			cv2.imshow("Visualize", clone)
 			cv2.waitKey(0)
-		# if we have found a new maximum correlation value, then update
-		# the bookkeeping variable
 		if found is None or maxVal > found[0]:
 			found = (maxVal, maxLoc, r)
-	# unpack the bookkeeping variable and compute the (x, y) coordinates
-	# of the bounding box based on the resized ratio
 	(_, maxLoc, r) = found
 	(startX, startY) = (int(maxLoc[0] * r), int(maxLoc[1] * r))
 	(endX, endY) = (int((maxLoc[0] + tW) * r), int((maxLoc[1] + tH) * r))
-	# draw a bounding box around the detected result and display the image
 	cv2.rectangle(image, (startX, startY), (endX, endY), (0, 0, 255), 2)
 	cv2.imshow("Image", image)
 	cv2.waitKey(0)
 
-print("Program ended.")
+def main():
+	print("Loading image...")
+	template = get_img_cv2()
+	print("Converting image to grayscale...")
+	template = cv2.cvtColor(template, cv2.COLOR_BGR2GRAY)
+	print("Detecting edges...")
+	image = get_img_cv2()
+	print("Searching for template matches...")
+	scale_match(image, template)
+	print("Program ended.")
+
+if __name__ == "__main__":
+	main()
 
 '''
 ImagenTotal = np.asarray(Image.open('../Tutorial/Tozeur/Chabbat.png'))
