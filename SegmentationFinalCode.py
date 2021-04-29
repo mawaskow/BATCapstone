@@ -77,5 +77,7 @@ def segmentation (filename):
     segmentation = ndi.binary_fill_holes(segmentation - 1)
     labeled_trees, _ = ndi.label(segmentation)
     plt.imshow(segmentation[:,:,0])
+    
+    return(segmentation, labeled_trees)
 
 segmentation(filename)
