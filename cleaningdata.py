@@ -14,7 +14,7 @@ import numpy as np
 from PIL import Image, ImageEnhance
 
 from skimage.transform import hough_line, hough_line_peaks
-from skimage.feature import canny
+from skimage.feature import canny, match_template
 from skimage.draw import line
 from skimage import data
 
@@ -98,14 +98,127 @@ def hough_prob(img, thres, linlen, lingap, show = False):
         plt.tight_layout()
         plt.savefig('./Outputs/prob_hough_thres'+str(thres)+'_len'+str(linlen)+'_gap'+str(lingap)+'.png', dpi=300, bbox_inches='tight')
 
+def listapuntos(result):
+    '''
+    For dem_improv fxn
+    '''
+    xlist = []
+    ylist = []
+    for punto in range(np.shape(result)[1]):
+        xlist.append(result[1][punto])
+        ylist.append(result[0][punto])
+    return xlist, ylist
+
+def dem_improv(img, cimg, tol, clvl, show = False):
+    '''
+    This function is meant to demonstrate the improvement of the algorithm.
+    '''
+    ImagenTotal = np.asarray(img)
+    ImagenContTotal = np.asarray(cimg)
+    # load test templates as array
+    imgtempsmall = Image.open('../Tutorial/Tozeur/Template1.png')
+    imgtempmed = Image.open('../Tutorial/Tozeur/Template2.png')
+    imgtemplrg = Image.open('../Tutorial/Tozeur/Template3.png')
+    imgtempxtra = Image.open('../Tutorial/Tozeur/Template4.png')
+    #
+    ImagenTemplateSmall = np.asarray(imgtempsmall)
+    ImagenTemplateMedium = np.asarray(imgtempmed)
+    ImagenTemplateLarge = np.asarray(imgtemplrg)
+    ImagenTemplateExtra = np.asarray(imgtempxtra)
+    # convert to single band
+    imagen = ImagenTotal[:,:,1]
+    SmallTrees =ImagenTemplateSmall[:,:,2]
+    MedTrees = ImagenTemplateMedium[:,:,2]
+    LrgTrees = ImagenTemplateLarge[:,:,2]
+    ExLrgTrees = ImagenTemplateExtra[:,:,2]
+    # run matching
+    resultsmall = match_template(imagen, SmallTrees)
+    resultsmallquery = np.where(resultsmall>tol)
+    resultmedium = match_template(imagen, MedTrees)
+    resultmediumquery = np.where(resultmedium>tol)
+    resultlarge = match_template(imagen, LrgTrees)
+    resultlargequery = np.where(resultlarge>tol)
+    resultextra = match_template(imagen, ExLrgTrees)
+    resultextraquery = np.where(resultextra>tol)
+    # Adjust contrast of template images in addition to original image
+    ImagenTemplateSmall_c = np.asarray(adj_contrast(imgtempsmall, clvl))
+    ImagenTemplateMedium_c = np.asarray(adj_contrast(imgtempmed, clvl))
+    ImagenTemplateLarge_c = np.asarray(adj_contrast(imgtemplrg, clvl))
+    ImagenTemplateExtra_c = np.asarray(adj_contrast(imgtempxtra, clvl))
+    #
+    imagen_c = ImagenContTotal[:,:,1]
+    SmallTrees_c =ImagenTemplateSmall_c[:,:,2]
+    MedTrees_c = ImagenTemplateMedium_c[:,:,2]
+    LrgTrees_c = ImagenTemplateLarge_c[:,:,2]
+    ExLrgTrees_c = ImagenTemplateExtra_c[:,:,2]
+    # run matching
+    resultsmall_c = match_template(imagen_c, SmallTrees_c)
+    resultsmallquery_c = np.where(resultsmall_c>tol)
+    resultmedium_c = match_template(imagen_c, MedTrees_c)
+    resultmediumquery_c = np.where(resultmedium_c>tol)
+    resultlarge_c = match_template(imagen_c, LrgTrees_c)
+    resultlargequery_c = np.where(resultlarge_c>tol)
+    resultextra_c = match_template(imagen_c, ExLrgTrees_c)
+    resultextraquery_c = np.where(resultextra_c>tol)
+    #show the interpreted results 
+    if show:
+        fig, ax = plt.subplots(1, 2, figsize=(20, 5))
+        ax[0].plot(listapuntos(resultsmallquery)[0], listapuntos(resultsmallquery)[1], 'o', 
+                markeredgecolor='g', markerfacecolor='none', markersize=5, label="Palm Tree - Type 1")
+        ax[0].plot(listapuntos(resultmediumquery)[0], listapuntos(resultmediumquery)[1], 'o', 
+                markeredgecolor='r', markerfacecolor='none', markersize=5, label="Palm Tree - Type 2")
+        ax[0].plot(listapuntos(resultlargequery)[0], listapuntos(resultlargequery)[1], 'o', 
+                markeredgecolor='b', markerfacecolor='none', markersize=5, label="Palm Tree - Type 3")
+        ax[0].plot(listapuntos(resultextraquery)[0], listapuntos(resultextraquery)[1], 'o', 
+                markeredgecolor='y', markerfacecolor='none', markersize=5, label="Palm Tree - Type 4")
+        ax[0].imshow(ImagenTotal[10:-10,10:-10,:])
+        ax[1].plot(listapuntos(resultsmallquery_c)[0], listapuntos(resultsmallquery_c)[1], 'o', 
+                markeredgecolor='g', markerfacecolor='none', markersize=5, label="Palm Tree - Type 1")
+        ax[1].plot(listapuntos(resultmediumquery_c)[0], listapuntos(resultmediumquery_c)[1], 'o', 
+                markeredgecolor='r', markerfacecolor='none', markersize=5, label="Palm Tree - Type 2")
+        ax[1].plot(listapuntos(resultlargequery_c)[0], listapuntos(resultlargequery_c)[1], 'o', 
+                markeredgecolor='b', markerfacecolor='none', markersize=5, label="Palm Tree - Type 3")
+        ax[1].plot(listapuntos(resultextraquery_c)[0], listapuntos(resultextraquery_c)[1], 'o', 
+                markeredgecolor='y', markerfacecolor='none', markersize=5, label="Palm Tree - Type 4")
+        ax[1].imshow(ImagenContTotal[10:-10,10:-10,:])
+        plt.legend(loc='upper center', bbox_to_anchor=(1, 0.5))
+        plt.savefig('./Outputs/cleaned_tree_class_tol'+ str(tol)+ '.png', dpi=300, bbox_inches='tight')
+    # classification library
+    result_types = [resultsmallquery, resultmediumquery, resultlargequery, resultextraquery]
+    result_types_c = [resultsmallquery_c, resultmediumquery_c, resultlargequery_c, resultextraquery_c]
+    key_nms = ["small", "medium", "large", "extra"]
+    count_dct = {}
+    for i in range(len(result_types)):
+        x,y = listapuntos(result_types[i])
+        count_dct[key_nms[i]] = len(x)
+    total = 0
+    for i in count_dct.keys():
+        total += count_dct[i]
+    count_dct["total"] = total
+    print("Original Conditions:", count_dct)
+    count_dct_c = {}
+    for i in range(len(result_types_c)):
+        x,y = listapuntos(result_types_c[i])
+        count_dct_c[key_nms[i]] = len(x)
+    total = 0
+    for i in count_dct_c.keys():
+        total += count_dct_c[i]
+    count_dct_c["total"] = total
+    print("Contrast Adjustment:", count_dct_c)
+
 def main():
     img = Image.open('../Tutorial/Tozeur/Chabbat.png')
     print("Enhancing image with contrast transform...")
-    adj_img = adj_contrast(img, 100, True)
+    contrast = 60
+    adj_img = adj_contrast(img, contrast, show = True)
+    '''
     print("Conducting basic Hough Transform...")
-    hough_straight(adj_img, 0.25, True)
+    hough_straight(adj_img, precis = 0.25, show = True)
     print("Conducting Probabilistic Hough Transform...")
-    hough_prob(adj_img, 10, 100, 5, True)
+    hough_prob(adj_img, thres=10, linlen=100, lingap=5, show =True)
+    '''
+    print("Compiling results...")
+    dem_improv(img, adj_img, tol = 0.7, clvl = contrast, show = True)
     plt.show()
     print("Program ended.")
 
