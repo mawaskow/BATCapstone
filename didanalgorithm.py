@@ -63,18 +63,19 @@ plt.savefig('./Outputs/didan_alg_templatedisp.png', dpi=300, bbox_inches='tight'
 # Adjust the threshold to eliminate error and noise 
 
 print("Searching for template matches...")
+tol = 0.70
 #small
 resultsmall = match_template(imagen, SmallTrees)
-resultsmallquery = np.where(resultsmall>0.70)
+resultsmallquery = np.where(resultsmall>tol)
 #medium
 resultmedium = match_template(imagen, MedTrees)
-resultmediumquery = np.where(resultmedium>0.70)
+resultmediumquery = np.where(resultmedium>tol)
 #large
 resultlarge = match_template(imagen, LrgTrees)
-resultlargequery = np.where(resultlarge>0.70)
+resultlargequery = np.where(resultlarge>tol)
 #extra
 resultextra = match_template(imagen, ExLrgTrees)
-resultextraquery = np.where(resultextra>0.70)
+resultextraquery = np.where(resultextra>tol)
 
 ###################################
 ### Organize results for display
