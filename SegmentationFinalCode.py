@@ -20,7 +20,7 @@ print("Press enter when finished.")
 filename = input("File name:")
 print("")
 
-def segmentation (filename):
+def segmentation(filename):
     Image_1 = np.asarray(Image.open(filename))
     tree = Image_1[:, :, 0]
 

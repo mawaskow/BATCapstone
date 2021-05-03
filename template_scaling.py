@@ -13,7 +13,6 @@ from tkinter.filedialog import askopenfilename
 from tkinter.filedialog import asksaveasfilename
 
 import numpy as np
-import argparse
 import imutils
 import glob
 import cv2
@@ -44,7 +43,7 @@ def get_img_cv2(show = False):
 # loop over the images to find the template in
 
 def scale_match(image, template, vis = False):
-	template = cv2.Canny(template, 50, 200)
+	#template = cv2.Canny(template, 50, 200)
 	(tH, tW) = template.shape[:2]
 	gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 	found = None
@@ -64,7 +63,7 @@ def scale_match(image, template, vis = False):
 		result = cv2.matchTemplate(edged, template, cv2.TM_CCOEFF)
 		(_, maxVal, _, maxLoc) = cv2.minMaxLoc(result)
 		# check to see if the iteration should be visualized
-		if not vis:
+		if vis:
 			# draw a bounding box around the detected region
 			clone = np.dstack([edged, edged, edged])
 			cv2.rectangle(clone, (maxLoc[0], maxLoc[1]),
@@ -88,7 +87,7 @@ def main():
 	print("Detecting edges...")
 	image = get_img_cv2()
 	print("Searching for template matches...")
-	scale_match(image, template)
+	scale_match(image, template, True)
 	print("Program ended.")
 
 if __name__ == "__main__":

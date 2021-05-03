@@ -6,7 +6,7 @@ Created on Thu Apr 22 15:40:06 2021
 """
 import math
 
-def compare ():
+def compare():
     template <- #input the results from Ales program
     segmentation <- #input the results from Victoria program
 

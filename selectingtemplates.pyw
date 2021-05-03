@@ -115,8 +115,6 @@ def main():
     see_results = False
     image = gettestimg(see_results)
     #image = get_img(see_results)
-    fct = 500
-    #fct = float(input("Select zoom level (>0) [>1 for zoom in, <1 for zoom out]: "))
     select_temp(image)
 
 if __name__ == "__main__":
