@@ -234,11 +234,6 @@ def segmentation(img):
     plt.imshow(segmentation[:,:,0])
     plt.show()
 
-    print('segmentation')
-    print(segmentation)
-    print("labeled_trees")
-    print(labeled_trees)
-
     return segmentation, labeled_trees
 
 def categorization(filename, threshold = 0.7):
@@ -358,12 +353,14 @@ def compare(temp_list, seg_list):
             est_dif = estimate - template
             print("Templat Matching was ", est_dif, " trees off of estimate amount")
 
-def error_check(filename):
+def error_check(filename, lower, upper):
     '''
     Author: Mpoyi
     Purpose: 
     Parameters:
         filename = [string]
+        lower = [integer] lower marker
+        upper = higher marker
     Returns:
     '''
     image = np.asarray(Image.open(filename))
@@ -371,16 +368,15 @@ def error_check(filename):
     elevation_map = sobel(image)
     markers = np.zeros_like(image)
     # lower marker for Chabbat
-    markers[image < 110] = 1
+    markers[image < lower] = 1
     # higher marker for Chabbat
-    markers[image > 100] = 2
+    markers[image > upper] = 2
     im_true = watershed(elevation_map, markers)
     im_true = ndi.label(ndi.binary_fill_holes(im_true - 1))[0]
 
     edges = sobel(image)
     im_test1 = watershed(edges, markers=468, compactness=0.001)
 
-    # image = img_as_float(image)
     # segmentation method used in ur program
     method_names = ['Compact watershed']
     short_method_names = ['Compact WS']
@@ -438,20 +434,36 @@ def main():
     path = os.getcwd()
     print("\nCurrent path:", path)
     # HARDCODED
-    img, path = gettestimg(show = False)
-    print("Enhancing image...")
-    contrast = 60
+    #img, path = gettestimg(show = False)
+    input("\nPlease select reference image in the next prompt.\nPress enter to continue. ")
+    img, path = get_img(show = False)
+    resp = input("\nDo you have template images for matching? (Y/N): ")
+    if resp == "Y":
+        num = input("\nEnter the integer number of templates you will be selecting, then press enter to continue: ")
+        # these may not be able to store images/string types, if not, do dictionary
+        tmpimglst = np.zeros(num)
+        tmpfilelst = np.zeros(num)
+        for i in range(num):
+            input("\nSelect template image "+ str(i) ".\nPress enter to continue: ")
+            tmpimglst[i], tmpfilelst[i] = get_img(show = False)
+    elif resp == "N":
+        # this section/function will need more development
+        # in fxn, need to save images as pngs, then return the filenames so it will match up with Rolly's program
+        select_temp(img)
+    
+    contrast = input("\nEnter the desired contrast adjustment level (default = 60): ")
+    print("Applying contrast adjustment...")
     adj_img = adj_contrast(img, contrast, show = True)
-    print("Categorizing")
+    tmpcontlst = np.zeroes(len(tmpimglst))
+    for i in range(len(tmpimglst)):
+        tmpcontlst[i] = adj_contrast(tmpimglst[i], contrast, show = False)
+    
+    print("Conducting categorization...")
     categorization(path, threshold = 0.7)
-    # need to adapt to selected templates/ undo hardcoding
-    print("Compiling results...")
-    see_results = False
-    image = gettestimg(see_results)
-    #image = get_img(see_results)
-    select_temp(image)
+    
+    #print("Compiling results...")
     compare(temp_list, seg_list)
-    error_check(filename)
+    error_check(filename, 110, 100)
     plt.show()
     print("Program ended.")
 
