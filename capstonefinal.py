@@ -49,16 +49,19 @@ def gettestimg(show = False):
     Purpose: Gets the hardcoded Chabbat image
     Parameters:
         show = [boolean] whether or not to display the images
-    Returns: Reference image (PIL Image.open() type)
+    Returns: 
+        Reference image (PIL Image.open() type)
+        filename
     '''
-    img = Image.open('../Tutorial/Tozeur/Chabbat.png')
+    filename = '../Tutorial/Tozeur/Chabbat.png'
+    img = Image.open(filename)
     ImagenTotal = np.asarray(img)
     trees = ImagenTotal[:,:,0]
     if show:
         plt.figure()
         plt.imshow(trees)
         plt.show()
-    return img
+    return img, filename
 
 def get_img(show = False):
     '''
@@ -66,10 +69,11 @@ def get_img(show = False):
     Purpose: Gets user-selected image (both reference and templates)
     Parameters: 
         show = [boolean] whether or not to display the old & new images
-    Returns: Selected image (PIL Image.open() type)
+    Returns: 
+        Selected image (PIL Image.open() type)
+        infile = filename
     '''
     infile= askopenfilename()
-    print(infile)
     img = Image.open(infile)
     im_tot = np.asarray(img)
     if show:
@@ -77,7 +81,7 @@ def get_img(show = False):
         plt.imshow(im_tot[:,:,0])
         plt.title("Image to be Analyzed")
         plt.show()
-    return img
+    return img, infile
 
 def line_select_callback(eclick, erelease):
     '''
@@ -237,7 +241,7 @@ def segmentation(img):
 
     return segmentation, labeled_trees
 
-def categorization(img, threshold = 0.7):
+def categorization(filename, threshold = 0.7):
     '''
     Author: Mpoyi
     Purpose: 
@@ -246,9 +250,16 @@ def categorization(img, threshold = 0.7):
         threshold = [float] template matching threshold between 0 and 1
     Returns:
     '''
+    print("Select the original image")
+    filename = askopenfilename()
+    print("Select the small tree category")
+    category_small = askopenfilename()
+    print("Select the average tree category")
+    category_medium = askopenfilename()
+    print("Select the large tree category")
+    category_large = askopenfilename()
     # original image
-    #img_rgb = cv2.imread(img)
-    img_rgb = img
+    img_rgb = cv2.imread(filename)
     # grey-scaling original image
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
     #reading template
@@ -349,9 +360,10 @@ def compare(temp_list, seg_list):
 
 def error_check(filename):
     '''
-    Author: 
+    Author: Mpoyi
     Purpose: 
     Parameters:
+        filename = [string]
     Returns:
     '''
     image = np.asarray(Image.open(filename))
@@ -426,12 +438,12 @@ def main():
     path = os.getcwd()
     print("\nCurrent path:", path)
     # HARDCODED
-    img = gettestimg(show = False)
+    img, path = gettestimg(show = False)
     print("Enhancing image...")
     contrast = 60
     adj_img = adj_contrast(img, contrast, show = True)
-    print("categorizing")
-    categorization(img, threshold = 0.7)
+    print("Categorizing")
+    categorization(path, threshold = 0.7)
     # need to adapt to selected templates/ undo hardcoding
     print("Compiling results...")
     see_results = False
