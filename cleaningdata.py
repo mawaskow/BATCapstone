@@ -207,7 +207,7 @@ def dem_improv(img, cimg, tol, clvl, show = False):
     print("Contrast Adjustment:", count_dct_c)
 
 def main():
-    img = Image.open('../Tutorial/Tozeur/Chabbat.png')
+    img = Image.open('../Tutorial/Tozeur/Chabbat.png'). #please note this path points to a folder outside (in parallel with) the project (BATCapstone)
     print("Enhancing image with contrast transform...")
     contrast = 60
     adj_img = adj_contrast(img, contrast, show = True)
