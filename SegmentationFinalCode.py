@@ -7,7 +7,7 @@ Created on Tue Apr 20 15:51:14 2021
 
 import matplotlib.pyplot as plt
 import numpy as np
-from PIL import Image
+from PIL import Image, ImageDraw, ImageFont
 from skimage.exposure import histogram
 from skimage.feature import canny
 from scipy import ndimage as ndi
@@ -20,7 +20,7 @@ print("Press enter when finished.")
 filename = input("File name:")
 print("")
 
-def segmentation(filename):
+def segmentation (filename):
     Image_1 = np.asarray(Image.open(filename))
     tree = Image_1[:, :, 0]
 
@@ -61,6 +61,10 @@ def segmentation(filename):
     mask_sizes = sizes > 5
     mask_sizes[0] = 0
     trees_cleaned = mask_sizes[label_objects] 
+    print("The number of date palms is:" + str(len(sizes)))
+    count = len(sizes)
+   
+    
     plt.imshow(trees_cleaned)
 
     elevation_map = sobel(Image_1)
@@ -78,6 +82,6 @@ def segmentation(filename):
     labeled_trees, _ = ndi.label(segmentation)
     plt.imshow(segmentation[:,:,0])
     
-    return(segmentation, labeled_trees)
+    return(segmentation, labeled_trees, count)
 
 segmentation(filename)
