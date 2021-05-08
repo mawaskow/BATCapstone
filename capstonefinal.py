@@ -444,7 +444,7 @@ def main():
         tmpimglst = np.zeros(num)
         tmpfilelst = np.zeros(num)
         for i in range(num):
-            input("\nSelect template image "+ str(i) ".\nPress enter to continue: ")
+            input("\nSelect template image "+ str(i) ".\nPress enter to continue: "). #'+' is missing after str(i)
             tmpimglst[i], tmpfilelst[i] = get_img(show = False)
     elif resp == "N":
         # this section/function will need more development
