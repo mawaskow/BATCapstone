@@ -237,6 +237,9 @@ def segmentation(img):
     mask_sizes = sizes > 5
     mask_sizes[0] = 0
     trees_cleaned = mask_sizes[label_objects]
+
+    count = len(sizes)
+    print("The number of date palms is:" + str(count))
     
     plt.figure(figsize = (10,10))
     plt.imshow(fill_tree)
@@ -248,6 +251,7 @@ def segmentation(img):
     plt.title("Trees Cleaned")
     plt.show()
 
+    elevation_map = sobel(Image_1)
     plt.figure(figsize = (10,10))
     plt.imshow(elevation_map)
     plt.show()
@@ -256,10 +260,10 @@ def segmentation(img):
     #PalmTreesOasis1: upper = 80, lower = 100
     #Shakmo: upper = 100, lower = 75
 
-    elevation_map = sobel(Image_1)
     markers = np.zeros_like(Image_1)
     markers[Image_1 < lower] = 1
     markers[Image_1 > upper] = 2
+    
     segmentation = watershed(elevation_map, markers)
     segmentation = ndi.binary_fill_holes(segmentation - 1)
     labeled_trees, _ = ndi.label(segmentation)
@@ -268,7 +272,7 @@ def segmentation(img):
     plt.imshow(segmentation[:,:,0])
     plt.show()
 
-    return segmentation, labeled_trees
+    return segmentation, labeled_trees, count
 
 def categorization(filename, templatenames, threshold = 0.7):
     '''
@@ -284,13 +288,16 @@ def categorization(filename, templatenames, threshold = 0.7):
     ntemp = len(templatenames)
     # original image
     img_rgb = cv2.imread(filename)
+    #plt.imshow(img_rgb)
     # grey-scaling original image
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-    
     counts = []
     for i in range(ntemp):
-        template = cv2.imread(templatenames[i],0)
-        w, h = template.shape[::-1] 
+        template = cv2.imread(templatenames[i], 0)
+        #plt.imshow(template)
+        w, h = template.shape[::-1]
+        #w = len(template[:,0])
+        #h = len(template[0,:])
         res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
         count = 0
         loc = np.where(res >= threshold)
@@ -304,6 +311,7 @@ def categorization(filename, templatenames, threshold = 0.7):
     for i in counts:
         Total += i
     counts.append(Total)
+    print(counts)
     return counts
 
 def compare(temp_list, seg_list):
@@ -316,7 +324,7 @@ def compare(temp_list, seg_list):
     Returns:
     '''
     template = temp_list[-1]
-    segmentation = seg_list[-1]
+    segmentation = seg_list[0]
     print("\nThe Template Matching program counted", template, "trees in the image.")
     print("The Segmentation program counted", segmentation, "trees in the image.")
 
@@ -455,6 +463,7 @@ def main():
         # this section/function will need more development
         # in fxn, need to save images as pngs, then return the filenames so it will match up with Rolly's program
         tmpimglst, tmpfilelst = enable_multselect(img)
+    #print(tmpfilelst)
     contrast = int(input("\nEnter the desired contrast adjustment level (suggestion = 60): "))
     print("Applying contrast adjustment...")
     adj_img = adj_contrast(img, contrast, show = True)
@@ -463,15 +472,18 @@ def main():
     tmpimglst_cont = []
     tmpfilelst_cont = []
     for i in range(len(tmpimglst)):
-        arry = adj_contrast(tmpimglst[i], contrast, show = False)
-        tmpimglst_cont.append(arry)
-        tmpfilelst_cont.append(tmpfilelst[i][0:-4]+"_adj.png")
+        tempimge = adj_contrast(tmpimglst[i], contrast, show = False)
+        tmpimglst_cont.append(tempimge)
+        tempadjn = tmpfilelst[i][0:-4]+"_adj.png"
+        tmpfilelst_cont.append(tempadjn)
+        tempimge.save(tempadjn)
+    #print(tmpfilelst_cont)
     print("Conducting categorization...")
-    categorization(adj_fname, tmpfilelst_cont, threshold = 0.7)
-    
+    countslst = categorization(adj_fname, tmpfilelst_cont, threshold = 0.7)
+    var1, var2, finct = segmentation(adj_img)
     #print("Compiling results...")
-    compare(temp_list, seg_list)
-    error_check(filename, 110, 100)
+    compare(countslst, [finct])
+    error_check(adj_fname, 110, 100)
     plt.show()
     print("Program ended.")
 
