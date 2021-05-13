@@ -111,11 +111,42 @@ def select_temp(img):
     fig.canvas.mpl_connect('key_press_event', toggle_selector)
     plt.show()
 
+def enable_multselect(img):
+    '''
+    This function enables a user to select a number of templates from a display.
+    '''
+    print("\nA window will appear displaying your reference image. Zoom in by selecting the magnifying glass icon at the bottom of the window.")
+    print("After zooming in by selecting a rectangle to zoom to, remember to click the magnifying glass icon again to enable the rectangle selector.")
+    print("\nOnce you have found the area you want to save as a template, as you select it a red rectangle will appear.")
+    print("You can only select one template at a time, so exit the window after selecting the rectangle so you can save the template.")
+    input("\nEnd of instructions. Press enter to continue. ")
+    resp = " "
+    tmpimglst= []
+    tmpfilelst= []
+    while resp != "N":
+        resp = input("\nWould you like to select a new template? (Y/N): ")
+        select_temp(img)
+        dimstr = input("\nUsing Ctrl+C to copy and Ctrl+V to paste, paste the above callback here [the form (###.##,###.##) --> (###.##,###.##)]: ")
+        rectdim = dimstr.split(",")
+        x1 = int(round(float(rectdim[1:7])))
+        y1 = int(round(float(rectdim[9:15])))
+        x2 = int(round(float(rectdim[22:28])))
+        y2 = int(round(float(rectdim[30:36])))
+        im_tot = np.asarray(img)
+        template = im_tot[y1:y2, x1:x2]
+        im = Image.fromarray(template)
+        tmpimglst.append(im)
+        filenm = asksaveasfilename()
+        im.save(filenm)
+        tmpfilelst.append(filenm)
+    return tmpimglst, tmpfilelst
+
+
 def main():
     see_results = False
     image = gettestimg(see_results)
     #image = get_img(see_results)
-    select_temp(image)
+    templates, filenames = enable_multselect(image)
 
 if __name__ == "__main__":
     main()
