@@ -142,6 +142,40 @@ def select_temp(img):
     fig.canvas.mpl_connect('key_press_event', toggle_selector)
     plt.show()
 
+def enable_multselect(img):
+    '''
+    Author: Waskow
+    This function enables a user to select a number of templates from a display.
+    '''
+    print("\nA window will appear displaying your reference image. Zoom in by selecting the magnifying glass icon at the bottom of the window.")
+    print("After zooming in by selecting a rectangle to zoom to, remember to click the magnifying glass icon again to enable the rectangle selector.")
+    print("\nOnce you have found the area you want to save as a template, as you select it a red rectangle will appear.")
+    print("You can only select one template at a time, so exit the window after selecting the rectangle so you can save the template.")
+    input("\nEnd of instructions. Press enter to continue. ")
+    resp = " "
+    tmpimglst= []
+    tmpfilelst= []
+    while resp != "N":
+        resp = input("\nWould you like to select a new template? (Y/N): ")
+        if resp == "Y":
+            select_temp(img)
+            dimstr = input("\nUsing Ctrl+C to copy and Ctrl+V to paste, paste the above callback here [the form (###,###) --> (###,###)]: ")
+            rectdim = dimstr.split(" ")
+            x1 = int(round(float(rectdim[0][1:-1])))
+            y1 = int(round(float(rectdim[1][0:-1])))
+            x2 = int(round(float(rectdim[3][1:-1])))
+            y2 = int(round(float(rectdim[4][0:-1])))
+            im_tot = np.asarray(img)
+            template = im_tot[y1:y2, x1:x2]
+            im = Image.fromarray(template)
+            tmpimglst.append(im)
+            filenm = asksaveasfilename()
+            im.save(filenm)
+            tmpfilelst.append(filenm)
+        elif resp != "N" and resp != "Y":
+            print("Input not recognized.")
+    return tmpimglst, tmpfilelst
+
 def adj_contrast(img, clvl, show = False):
     '''
     Author: Waskow
@@ -236,7 +270,7 @@ def segmentation(img):
 
     return segmentation, labeled_trees
 
-def categorization(filename, threshold = 0.7):
+def categorization(filename, templatenames, threshold = 0.7):
     '''
     Author: Mpoyi
     Purpose: 
@@ -244,62 +278,33 @@ def categorization(filename, threshold = 0.7):
         filename
         threshold = [float] template matching threshold between 0 and 1
     Returns:
+    Notes:
+    Waskow adaptations to code only modify input structure slightly, so only 3 templates readable from lists so far.
     '''
-    print("Select the original image")
-    filename = askopenfilename()
-    print("Select the small tree category")
-    category_small = askopenfilename()
-    print("Select the average tree category")
-    category_medium = askopenfilename()
-    print("Select the large tree category")
-    category_large = askopenfilename()
+    ntemp = len(templatenames)
     # original image
     img_rgb = cv2.imread(filename)
     # grey-scaling original image
     img_gray = cv2.cvtColor(img_rgb, cv2.COLOR_BGR2GRAY)
-    #reading template
-    template_small = cv2.imread(category_small,0)
-    w, h = template_small.shape[::-1] 
-
-    res_small = cv2.matchTemplate(img_gray,template_small,cv2.TM_CCOEFF_NORMED)
-    # creating counter for the matched trees
-    count_small = 0
-    loc = np.where( res_small >= threshold)
-    for pt in zip(*loc[::-1]):
-        # creating rectangle of region of template
-        cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-        count_small+=1
-    # creating output file of counted trees being part of that category
-    cv2.imwrite('res_small.png',img_rgb)
-    #reading template
-    template_medium = cv2.imread(category_medium,0)
-    w, h = template_medium.shape[::-1] 
-
-    res_medium = cv2.matchTemplate(img_gray,template_medium,cv2.TM_CCOEFF_NORMED) 
-
-    count_mid = 0
-    loc = np.where( res_medium >= threshold)
-    for pt in zip(*loc[::-1]):
-        cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-        count_mid+=1
     
-    cv2.imwrite('res_medium.png',img_rgb)
-    #reading template
-    template_large = cv2.imread(category_large,0)
-    w, h = template_large.shape[::-1] 
-
-    res_large = cv2.matchTemplate(img_gray,template_large,cv2.TM_CCOEFF_NORMED) 
-    count_large = 0
-    loc = np.where( res_large >= threshold)
-    for pt in zip(*loc[::-1]):
-        cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
-        count_large+=1
-    
-    cv2.imwrite('res_large.png',img_rgb)
+    counts = []
+    for i in range(ntemp):
+        template = cv2.imread(templatenames[i],0)
+        w, h = template.shape[::-1] 
+        res = cv2.matchTemplate(img_gray,template,cv2.TM_CCOEFF_NORMED)
+        count = 0
+        loc = np.where(res >= threshold)
+        for pt in zip(*loc[::-1]):
+            cv2.rectangle(img_rgb, pt, (pt[0] + w, pt[1] + h), (0,0,255), 2)
+            count+=1
+        cv2.imwrite('res_'+str(i)+'.png',img_rgb)
+        counts.append(count)
     # counting total number of trees categorized
-    Total = count_small + count_mid + count_large
-
-    return [count_small, count_mid, count_large, Total]
+    Total = 0
+    for i in counts:
+        Total += i
+    counts.append(Total)
+    return counts
 
 def compare(temp_list, seg_list):
     '''
@@ -319,15 +324,15 @@ def compare(temp_list, seg_list):
     known = input("Input Y for yes and N for no: ")
 
     if known == "Y":
-        difference_S = sqrt((known - segmentation)^2) 
-        difference_T = sqrt((known - template)^2)
+        difference_S = math.sqrt((known - segmentation)^2) 
+        difference_T = math.sqrt((known - template)^2)
         if difference_T == 0:
             print("\nTemplate Matching has the correct result.")
         if difference_S == 0:
             print("\nSegmantation has the correct result.")
         if difference_T > difference_S:
             print("\nSegmenation has the more accurate count.")
-            difference = known - segmantation
+            difference = known - segmentation
             print("\nSegmentation was", difference, "trees off to actual amount.")
         if difference_T < difference_S:
             print("\nTemplate Matching has the more accurate count.")
@@ -338,8 +343,8 @@ def compare(temp_list, seg_list):
         print("\nWhat is the estimate trees in the image?")
         print("Press enter after number is inputed.")
         estimate = int(input("\nEstimate: "))
-        est_dif_S = sqrt((estimate - segmentation)^2)
-        est_dif_T = sqrt((estimate - templat)^2)
+        est_dif_S = math.sqrt((estimate - segmentation)^2)
+        est_dif_T = math.sqrt((estimate - template)^2)
         if est_dif_S == 0:
             print("Segmentation has the same result as your estimate.")
         if est_dif_T == 0:
@@ -430,36 +435,39 @@ def main():
     Parameters: None
     Returns: None
     '''
-    # print current path
-    path = os.getcwd()
-    print("\nCurrent path:", path)
-    # HARDCODED
-    #img, path = gettestimg(show = False)
     input("\nPlease select reference image in the next prompt.\nPress enter to continue. ")
     img, path = get_img(show = False)
+
     resp = input("\nDo you have template images for matching? (Y/N): ")
-    if resp == "Y":
-        num = input("\nEnter the integer number of templates you will be selecting, then press enter to continue: ")
-        # these may not be able to store images/string types, if not, do dictionary
-        tmpimglst = np.zeros(num)
-        tmpfilelst = np.zeros(num)
-        for i in range(num):
-            input("\nSelect template image "+ str(i) ".\nPress enter to continue: "). #'+' is missing after str(i)
-            tmpimglst[i], tmpfilelst[i] = get_img(show = False)
-    elif resp == "N":
+    if resp == "Y"or resp == "y":
+        tmpimglst = []
+        tmpfilelst = []
+        cont = " "
+        while cont != "N":
+            cont = input("\nWould you like to upload a template image? (Y/N): ")
+            if cont == "Y":
+                pretemp, prefile = get_img(show = False)
+                tmpimglst.append(pretemp)
+                tmpfilelst.append(prefile)
+            elif cont != "N" and cont != "Y":
+                print("Input not recognized.")
+    elif resp == "N" or resp == "n":
         # this section/function will need more development
         # in fxn, need to save images as pngs, then return the filenames so it will match up with Rolly's program
-        select_temp(img)
-    
-    contrast = input("\nEnter the desired contrast adjustment level (default = 60): ")
+        tmpimglst, tmpfilelst = enable_multselect(img)
+    contrast = int(input("\nEnter the desired contrast adjustment level (suggestion = 60): "))
     print("Applying contrast adjustment...")
     adj_img = adj_contrast(img, contrast, show = True)
-    tmpcontlst = np.zeroes(len(tmpimglst))
+    adj_fname = path[0:-4]+"_adj.png"
+    adj_img.save(adj_fname)
+    tmpimglst_cont = []
+    tmpfilelst_cont = []
     for i in range(len(tmpimglst)):
-        tmpcontlst[i] = adj_contrast(tmpimglst[i], contrast, show = False)
-    
+        arry = adj_contrast(tmpimglst[i], contrast, show = False)
+        tmpimglst_cont.append(arry)
+        tmpfilelst_cont.append(tmpfilelst[i][0:-4]+"_adj.png")
     print("Conducting categorization...")
-    categorization(path, threshold = 0.7)
+    categorization(adj_fname, tmpfilelst_cont, threshold = 0.7)
     
     #print("Compiling results...")
     compare(temp_list, seg_list)
