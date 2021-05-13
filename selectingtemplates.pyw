@@ -125,20 +125,23 @@ def enable_multselect(img):
     tmpfilelst= []
     while resp != "N":
         resp = input("\nWould you like to select a new template? (Y/N): ")
-        select_temp(img)
-        dimstr = input("\nUsing Ctrl+C to copy and Ctrl+V to paste, paste the above callback here [the form (###.##,###.##) --> (###.##,###.##)]: ")
-        rectdim = dimstr.split(",")
-        x1 = int(round(float(rectdim[1:7])))
-        y1 = int(round(float(rectdim[9:15])))
-        x2 = int(round(float(rectdim[22:28])))
-        y2 = int(round(float(rectdim[30:36])))
-        im_tot = np.asarray(img)
-        template = im_tot[y1:y2, x1:x2]
-        im = Image.fromarray(template)
-        tmpimglst.append(im)
-        filenm = asksaveasfilename()
-        im.save(filenm)
-        tmpfilelst.append(filenm)
+        if resp == "Y":
+            select_temp(img)
+            dimstr = input("\nUsing Ctrl+C to copy and Ctrl+V to paste, paste the above callback here [the form (###,###) --> (###,###)]: ")
+            rectdim = dimstr.split(" ")
+            x1 = int(round(float(rectdim[0][1:-1])))
+            y1 = int(round(float(rectdim[1][0:-1])))
+            x2 = int(round(float(rectdim[3][1:-1])))
+            y2 = int(round(float(rectdim[4][0:-1])))
+            im_tot = np.asarray(img)
+            template = im_tot[y1:y2, x1:x2]
+            im = Image.fromarray(template)
+            tmpimglst.append(im)
+            filenm = asksaveasfilename()
+            im.save(filenm)
+            tmpfilelst.append(filenm)
+        elif resp != "N" and resp != "Y":
+            print("Input not recognized.")
     return tmpimglst, tmpfilelst
 
 
